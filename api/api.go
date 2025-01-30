@@ -35,6 +35,8 @@ func NewApiServer(taskCollection *mongo.Collection, dbName string, port string) 
 func (s *APIServer) Run() error {
 	router := mux.NewRouter().PathPrefix("/api").Subrouter()
 
+	router.HandleFunc("", s.home).Methods(http.MethodGet)
+
 	router.HandleFunc("/task/create", s.handleCreateTask).Methods(http.MethodPost)
 	router.HandleFunc("/task/status/update", s.handleUpdateTaskStatus).Methods(http.MethodPost)
 	router.HandleFunc("/task", s.handleGetTasks).Methods(http.MethodGet)
@@ -43,6 +45,10 @@ func (s *APIServer) Run() error {
 
 	log.Println("Listening on", s.port)
 	return http.ListenAndServe(fmt.Sprintf(":%s", s.port), router)
+}
+
+func (s *APIServer) home(w http.ResponseWriter, r *http.Request) {
+	utils.WriteJSON(w, http.StatusOK, map[string]any{"message": "Hello"})
 }
 
 func (s *APIServer) handleCreateTask(w http.ResponseWriter, r *http.Request) {
