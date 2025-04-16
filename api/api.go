@@ -33,7 +33,10 @@ func NewApiServer(taskCollection *mongo.Collection, dbName string, port string) 
 }
 
 func (s *APIServer) Run() error {
-	router := mux.NewRouter().PathPrefix("/api").Subrouter()
+	mainRouter := mux.NewRouter()
+
+	mainRouter.HandleFunc("/", s.mainPage).Methods(http.MethodGet)
+	router := mainRouter.PathPrefix("/api").Subrouter()
 
 	router.HandleFunc("", s.home).Methods(http.MethodGet)
 
@@ -44,11 +47,15 @@ func (s *APIServer) Run() error {
 	router.HandleFunc("/task/delete/{id}", s.handleDeleteTask).Methods(http.MethodDelete)
 
 	log.Println("Listening on", s.port)
-	return http.ListenAndServe(fmt.Sprintf(":%s", s.port), router)
+	return http.ListenAndServe(fmt.Sprintf(":%s", s.port), mainRouter)
+}
+
+func (s *APIServer) mainPage(w http.ResponseWriter, r *http.Request) {
+	utils.WriteJSON(w, http.StatusOK, map[string]any{"message": "Hello"})
 }
 
 func (s *APIServer) home(w http.ResponseWriter, r *http.Request) {
-	utils.WriteJSON(w, http.StatusOK, map[string]any{"message": "Hello"})
+	utils.WriteJSON(w, http.StatusOK, map[string]any{"message": "Api is work"})
 }
 
 func (s *APIServer) handleCreateTask(w http.ResponseWriter, r *http.Request) {
